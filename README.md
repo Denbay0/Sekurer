@@ -113,3 +113,26 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/tasks
 - минимум 1 agreement
 - минимум 1 task
 - минимум 1 unclear point
+
+## Mobile development
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+Для реального телефона:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://<LAN_IP>:8000
+```
+
+Backend должен быть запущен:
+
+```bash
+make init
+make up
+make migrate
+make smoke
+```
