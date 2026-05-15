@@ -233,3 +233,13 @@ Notes:
 - For sideloaded APK Android may still show “unknown source” warning.
 - All updates must be signed with the same keystore.
 - If keystore is lost, update over existing install is impossible; reinstall is required.
+
+## Codex status report
+
+Актуальный статус сборки и проверок смотри в `CODEX_STATUS.md`.
+
+Если Flutter SDK недоступен в среде Codex, `android/ios` project files нужно сгенерировать локально:
+
+```bash
+bash scripts/bootstrap_flutter_mobile.sh
+```
