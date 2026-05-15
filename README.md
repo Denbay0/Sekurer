@@ -58,6 +58,20 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/calls/{CALL_
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/tasks
 ```
 
+## Smoke test
+
+```bash
+cp backend/.env.example backend/.env
+docker compose up --build
+docker compose exec api alembic upgrade head
+bash scripts/smoke_test.sh
+```
+
+### Troubleshooting
+- Если worker не обрабатывает задачи, проверьте: `docker compose logs worker`
+- Если ошибка MinIO, проверьте консоль: `http://localhost:9001`
+- Если звонок в `failed`, посмотрите `error_message`: `GET /api/v1/calls/{id}`
+
 ## Mock mode
 Если `OPENAI_API_KEY=replace-me` или пустой, pipeline не падает и использует mock-обработку:
 - создаётся transcript
