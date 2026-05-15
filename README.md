@@ -2,15 +2,58 @@
 
 ## Backend Milestone 2
 
-### Запуск
+### Обязательная подготовка env
 ```bash
 cp backend/.env.example backend/.env
-docker compose up --build
+```
+
+> `docker-compose.yml` использует `env_file: backend/.env`, поэтому этот шаг обязателен перед любым запуском.
+
+### Запуск
+```bash
+docker compose up --build -d
 ```
 
 ### Миграции
 ```bash
 docker compose exec api alembic upgrade head
+```
+
+### Smoke test
+```bash
+bash scripts/smoke_test.sh
+```
+
+### Полный quickstart
+```bash
+cp backend/.env.example backend/.env
+docker compose up --build -d
+docker compose exec api alembic upgrade head
+bash scripts/smoke_test.sh
+```
+
+### Требования для smoke test
+- Нужны `curl` и `jq` (скрипт проверяет оба).
+
+### Тесты
+```bash
+docker compose exec api pytest
+```
+
+### Логи
+```bash
+docker compose logs -f api
+docker compose logs -f worker
+```
+
+### Остановка
+```bash
+docker compose down
+```
+
+### Полная очистка данных
+```bash
+docker compose down -v
 ```
 
 ### Полезные URL
@@ -58,17 +101,8 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/calls/{CALL_
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/tasks
 ```
 
-## Smoke test
-
-```bash
-cp backend/.env.example backend/.env
-docker compose up --build
-docker compose exec api alembic upgrade head
-bash scripts/smoke_test.sh
-```
-
 ### Troubleshooting
-- Если worker не обрабатывает задачи, проверьте: `docker compose logs worker`
+- Если worker не обрабатывает задачи, проверьте: `docker compose logs -f worker`
 - Если ошибка MinIO, проверьте консоль: `http://localhost:9001`
 - Если звонок в `failed`, посмотрите `error_message`: `GET /api/v1/calls/{id}`
 

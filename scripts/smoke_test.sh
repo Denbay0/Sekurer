@@ -13,6 +13,35 @@ cleanup() {
 }
 trap cleanup EXIT
 
+require_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    if [[ "$cmd" == "jq" ]]; then
+      echo "jq is required. Install jq and retry."
+    else
+      echo "Required command not found: $cmd"
+    fi
+    exit 1
+  fi
+}
+
+require_cmd curl
+require_cmd jq
+
+echo "[0/6] Waiting for API health ($BASE_URL/health) ..."
+HEALTH_OK=0
+for i in {1..30}; do
+  if curl -fs "$BASE_URL/health" >/dev/null; then
+    HEALTH_OK=1
+    break
+  fi
+  sleep 1
+done
+if [[ "$HEALTH_OK" -ne 1 ]]; then
+  echo "API is not healthy after 30 seconds: $BASE_URL/health"
+  exit 1
+fi
+
 printf 'ID3\x03\x00\x00\x00\x00\x00\x21TIT2\x00\x00\x00\x0F\x00\x00\x03Dummy audio\x00' > "$AUDIO_FILE"
 
 echo "[1/6] Registering user (or continuing if already exists)..."
@@ -35,15 +64,19 @@ if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
 fi
 
 echo "[3/6] Uploading audio..."
-UPLOAD_RESPONSE=$(curl -s -X POST "$BASE_URL/api/v1/calls/upload" \
+UPLOAD_CODE=$(curl -s -o "$TMP_DIR/upload_response.txt" -w "%{http_code}" -X POST "$BASE_URL/api/v1/calls/upload" \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@$AUDIO_FILE" \
   -F "title=Smoke call" \
   -F "contact_name=Smoke Contact" \
   -F "phone_number=+15555550123")
-CALL_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.id')
+UPLOAD_RESPONSE="$(cat "$TMP_DIR/upload_response.txt")"
+echo "Upload HTTP code: $UPLOAD_CODE"
+echo "Upload response body: $UPLOAD_RESPONSE"
+
+CALL_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.id // empty' 2>/dev/null || true)
 if [[ -z "$CALL_ID" || "$CALL_ID" == "null" ]]; then
-  echo "Upload failed"
+  echo "Upload failed: CALL_ID is empty"
   echo "$UPLOAD_RESPONSE"
   exit 1
 fi
