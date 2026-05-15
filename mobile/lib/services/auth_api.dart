@@ -7,10 +7,11 @@ class AuthApi {
 
   Future<TokenResponse> login(LoginRequest req) async {
     final res = await client.dio.post('/auth/login', data: req.toJson());
-    return TokenResponse.fromJson(res.data);
+    return TokenResponse.fromJson(res.data as Map<String, dynamic>);
   }
 
-  Future<void> register(RegisterRequest req) async {
-    await client.dio.post('/auth/register', data: req.toJson());
+  Future<TokenResponse> register(RegisterRequest req) async {
+    final res = await client.dio.post('/auth/register', data: req.toJson());
+    return TokenResponse.fromJson(res.data as Map<String, dynamic>);
   }
 }

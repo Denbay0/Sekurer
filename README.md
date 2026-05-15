@@ -136,3 +136,26 @@ make up
 make migrate
 make smoke
 ```
+
+## Mobile Milestone 1.1
+
+```bash
+cd mobile
+flutter pub get
+flutter analyze
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+Пояснения по API URL:
+- Android emulator: `http://10.0.2.2:8000`
+- iOS simulator: `http://localhost:8000`
+- Реальный телефон: `http://<LAN_IP>:8000`
+
+Перед запуском mobile backend должен быть поднят:
+
+```bash
+make init
+make up
+make migrate
+make smoke
+```
