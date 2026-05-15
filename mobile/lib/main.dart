@@ -1,54 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/api_client.dart';
+import 'core/app_state.dart';
 import 'core/app_theme.dart';
-import 'core/auth_storage.dart';
-import 'models/auth_models.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/calls/calls_list_screen.dart';
 import 'screens/planner/planner_screen.dart';
-import 'services/auth_api.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(create: (_) => AppState()..init(), child: const SekurerApp()),
+    ChangeNotifierProvider(
+      create: (_) => AppState()..init(),
+      child: const SekurerApp(),
+    ),
   );
-}
-
-class AppState extends ChangeNotifier {
-  final storage = AuthStorage();
-  late final ApiClient api;
-  String? token;
-  bool loading = true;
-
-  Future<void> init() async {
-    api = ApiClient(storage, onUnauthorized: logout);
-    token = await storage.getToken();
-    loading = false;
-    notifyListeners();
-  }
-
-  Future<void> login(String email, String password) async {
-    final t = await AuthApi(api).login(LoginRequest(email: email, password: password));
-    await storage.saveToken(t.accessToken);
-    token = t.accessToken;
-    notifyListeners();
-  }
-
-  Future<void> register(String name, String email, String password) async {
-    final t = await AuthApi(api).register(RegisterRequest(name: name, email: email, password: password));
-    await storage.saveToken(t.accessToken);
-    token = t.accessToken;
-    notifyListeners();
-  }
-
-  Future<void> logout() async {
-    await storage.clearToken();
-    token = null;
-    notifyListeners();
-  }
 }
 
 class SekurerApp extends StatelessWidget {
@@ -61,7 +27,11 @@ class SekurerApp extends StatelessWidget {
       theme: buildAppTheme(),
       home: Consumer<AppState>(
         builder: (_, state, __) {
-          if (state.loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          if (state.loading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
           return state.token == null ? const LoginScreen() : const HomeScreen();
         },
       ),
@@ -79,13 +49,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int index = 0;
+
   @override
   Widget build(BuildContext context) {
     final screens = [const CallsListScreen(), const PlannerScreen()];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sekurer'),
-        actions: [IconButton(onPressed: () => context.read<AppState>().logout(), icon: const Icon(Icons.logout))],
+        actions: [
+          IconButton(
+            onPressed: () => context.read<AppState>().logout(),
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: screens[index],
       bottomNavigationBar: NavigationBar(
@@ -93,7 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onDestinationSelected: (v) => setState(() => index = v),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.call), label: 'Звонки'),
-          NavigationDestination(icon: Icon(Icons.event_note), label: 'Планировщик'),
+          NavigationDestination(
+            icon: Icon(Icons.event_note),
+            label: 'Планировщик',
+          ),
         ],
       ),
     );

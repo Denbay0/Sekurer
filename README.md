@@ -159,3 +159,77 @@ make up
 make migrate
 make smoke
 ```
+
+## Mobile status
+
+```bash
+cd mobile
+flutter pub get
+dart format lib test
+flutter analyze
+flutter test
+flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+Run app:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+For real device:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://<LAN_IP>:8000
+```
+
+Backend before mobile run:
+
+```bash
+make init
+make up
+make migrate
+make smoke
+```
+
+## Android release signing
+
+1. Generate keystore:
+
+```bash
+keytool -genkey -v -keystore mobile/android/app/sekurer-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias sekurer
+```
+
+2. Create `mobile/android/key.properties`:
+
+```properties
+storePassword=ВАШ_ПАРОЛЬ
+keyPassword=ВАШ_ПАРОЛЬ
+keyAlias=sekurer
+storeFile=../app/sekurer-release-key.jks
+```
+
+3. Build release APK:
+
+```bash
+cd mobile
+flutter build apk --release --dart-define=API_BASE_URL=http://<SERVER_LAN_IP>:8000
+```
+
+Output APK:
+
+`mobile/build/app/outputs/flutter-apk/app-release.apk`
+
+Verify signature:
+
+```bash
+apksigner verify --verbose mobile/build/app/outputs/flutter-apk/app-release.apk
+```
+
+If `apksigner` is unavailable, install Android SDK build-tools.
+
+Notes:
+- Signed release APK is required for stable install/update flow.
+- For sideloaded APK Android may still show “unknown source” warning.
+- All updates must be signed with the same keystore.
+- If keystore is lost, update over existing install is impossible; reinstall is required.

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_client.dart';
-import '../../main.dart';
+import '../../core/app_state.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -40,7 +40,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     });
                     try {
                       await context.read<AppState>().register(name.text, email.text, password.text);
-                      if (context.mounted) Navigator.pop(context);
+                      if (context.mounted) {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      }
                     } catch (e) {
                       setState(() => error = getApiErrorMessage(e));
                     }
