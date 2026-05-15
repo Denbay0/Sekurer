@@ -1,0 +1,4 @@
+storePassword=change-me
+keyPassword=change-me
+keyAlias=sekurer
+storeFile=../app/sekurer-release-key.jks

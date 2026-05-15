@@ -23,3 +23,9 @@ down:
 
 reset:
 	docker compose down -v
+
+mobile-apk-debug:
+	cd mobile && flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000
+
+mobile-apk-release:
+	cd mobile && flutter build apk --release --dart-define=API_BASE_URL=http://$${API_BASE_URL}
