@@ -6,9 +6,22 @@ services:
     volumes:
       - ./backend:/app
     env_file:
-      - backend/.env.example
+      - backend/.env
     ports:
       - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  worker:
+    build: ./backend
+    working_dir: /app
+    command: celery -A app.workers.celery_app.celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - backend/.env
     depends_on:
       - postgres
       - redis

@@ -1,4 +1,4 @@
-from pydantic import EmailStr
+from pydantic import EmailStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     app_name: str = "AI Call Assistant API"
     api_v1_prefix: str = "/api/v1"
     app_env: str = "development"
-    secret_key: str = "change-me"
+    secret_key: str = Field(default="change-me", validation_alias="SECRET_KEY")
     access_token_expire_minutes: int = 60 * 24
     algorithm: str = "HS256"
 
@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     s3_bucket: str = "call-audio"
 
     openai_api_key: str = "replace-me"
-    transcribe_model: str = "replace-me"
-    analysis_model: str = "replace-me"
+    transcribe_model: str = "gpt-4o-mini-transcribe"
+    analysis_model: str = "gpt-4.1-mini"
 
     smtp_host: str = "smtp.example.com"
     smtp_port: int = 587

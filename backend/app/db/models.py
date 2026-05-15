@@ -50,6 +50,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    calls: Mapped[list["Call"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
 
 
 class Call(Base):
@@ -70,6 +71,11 @@ class Call(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    user: Mapped[User] = relationship(back_populates="calls", lazy="selectin")
+    agreements: Mapped[list["Agreement"]] = relationship(back_populates="call", lazy="selectin", cascade="all, delete-orphan")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="call", lazy="selectin", cascade="all, delete-orphan")
+    calendar_items: Mapped[list["CalendarItem"]] = relationship(back_populates="call", lazy="selectin", cascade="all, delete-orphan")
+    unclear_points: Mapped[list["UnclearPoint"]] = relationship(back_populates="call", lazy="selectin", cascade="all, delete-orphan")
 
 
 class Agreement(Base):
@@ -82,6 +88,7 @@ class Agreement(Base):
     confidence: Mapped[float | None] = mapped_column(Float)
     source_quote: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    call: Mapped[Call] = relationship(back_populates="agreements", lazy="selectin")
 
 
 class Task(Base):
@@ -98,6 +105,7 @@ class Task(Base):
     requires_confirmation: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    call: Mapped[Call] = relationship(back_populates="tasks", lazy="selectin")
 
 
 class CalendarItem(Base):
@@ -113,6 +121,7 @@ class CalendarItem(Base):
     requires_confirmation: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    call: Mapped[Call] = relationship(back_populates="calendar_items", lazy="selectin")
 
 
 class UnclearPoint(Base):
@@ -121,3 +130,4 @@ class UnclearPoint(Base):
     call_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("calls.id", ondelete="CASCADE"), nullable=False, index=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    call: Mapped[Call] = relationship(back_populates="unclear_points", lazy="selectin")
