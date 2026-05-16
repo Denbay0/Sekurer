@@ -7,6 +7,6 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final map = {'uploaded':'Загружен','transcribing':'Расшифровка','analyzing':'Анализ','ready':'Готово','failed':'Ошибка'};
     final colors = {'uploaded':Colors.blue,'transcribing':Colors.orange,'analyzing':Colors.deepOrange,'ready':Colors.green,'failed':Colors.red};
-    return Chip(label: Text(map[status] ?? status), backgroundColor: (colors[status] ?? Colors.grey).withOpacity(0.15));
+    return Chip(label: Text(map[status] ?? status), backgroundColor: (colors[status] ?? Colors.grey).withValues(alpha: 0.15));
   }
 }

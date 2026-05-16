@@ -179,8 +179,13 @@ class _CallDetailScreenState extends State<CallDetailScreen> {
                         child: ListTile(
                           title: Text(e.title),
                           subtitle: Text(
-                            '${e.description ?? ''}
-${e.status} ${e.requiresConfirmation ? '(требует подтверждения)' : ''}',
+                            [
+                              if ((e.description ?? '').isNotEmpty)
+                                e.description!,
+                              e.status,
+                              if (e.requiresConfirmation)
+                                '(требует подтверждения)',
+                            ].join('\n'),
                           ),
                           trailing: Wrap(
                             children: [
