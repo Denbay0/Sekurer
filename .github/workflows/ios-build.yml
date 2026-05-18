@@ -1,0 +1,85 @@
+name: iOS Flutter Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "Backend API base URL for the iOS build"
+        required: false
+        default: "http://127.0.0.1:8000"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ios-build.yml"
+      - "mobile/**"
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    name: Build unsigned iOS IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      API_BASE_URL: ${{ github.event.inputs.api_base_url || vars.IOS_API_BASE_URL || 'http://127.0.0.1:8000' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show tool versions
+        working-directory: mobile
+        run: |
+          flutter --version
+          xcodebuild -version
+          if ! command -v pod >/dev/null 2>&1; then
+            sudo gem install cocoapods --no-document
+          fi
+          pod --version
+
+      - name: Restore dependencies
+        working-directory: mobile
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Analyze and test
+        working-directory: mobile
+        run: |
+          flutter analyze
+          flutter test
+
+      - name: Build iOS without code signing
+        working-directory: mobile
+        run: |
+          flutter build ios --release --no-codesign --dart-define=API_BASE_URL="$API_BASE_URL"
+
+      - name: Package unsigned IPA
+        working-directory: mobile
+        run: |
+          mkdir -p build/ios/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
+          (cd build/ios/ipa && zip -qry Sekurer-ios-unsigned.ipa Payload)
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sekurer-ios-unsigned
+          path: mobile/build/ios/ipa/Sekurer-ios-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach IPA to GitHub Release
+        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v1.0.0 mobile/build/ios/ipa/Sekurer-ios-unsigned.ipa --repo "$GITHUB_REPOSITORY" --clobber
