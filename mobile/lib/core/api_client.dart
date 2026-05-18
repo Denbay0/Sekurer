@@ -19,7 +19,8 @@ String getApiErrorMessage(Object error) {
     }
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.sendTimeout) {
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.connectionError) {
       return 'Сервер не отвечает';
     }
   }

@@ -32,7 +32,10 @@ class StorageService:
     def ensure_bucket_exists(self) -> None:
         try:
             self.client.head_bucket(Bucket=self.bucket)
-        except ClientError:
+        except ClientError as exc:
+            error_code = str(exc.response.get("Error", {}).get("Code", ""))
+            if error_code not in {"404", "NoSuchBucket", "NotFound"}:
+                raise
             self.client.create_bucket(Bucket=self.bucket)
 
     def upload_fileobj(self, file_obj: io.BytesIO, object_key: str, content_type: str | None = None) -> str:

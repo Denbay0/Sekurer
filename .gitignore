@@ -1,5 +1,14 @@
 mobile/android/key.properties
 mobile/android/app/*.jks
 mobile/android/app/*.keystore
+backend/.env
+backend/logs/
+__pycache__/
+*.pyc
+.pytest_cache/
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+mobile/.idea/
 *.jks
 *.keystore

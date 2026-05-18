@@ -76,7 +76,12 @@ def process_call(call_id: str) -> None:
         db.execute(delete(CalendarItem).where(CalendarItem.call_id == call.id))
         db.execute(delete(UnclearPoint).where(UnclearPoint.call_id == call.id))
 
-        for a in analysis.get("agreements", []):
+        agreements = analysis.get("agreements", [])
+        tasks = analysis.get("tasks", [])
+        calendar_events = analysis.get("calendar_events", [])
+        unclear_points = analysis.get("unclear_points", [])
+
+        for a in agreements:
             db.add(
                 Agreement(
                     call_id=call.id,
@@ -87,7 +92,7 @@ def process_call(call_id: str) -> None:
                     source_quote=a.get("source_quote"),
                 )
             )
-        for t in analysis.get("tasks", []):
+        for t in tasks:
             db.add(
                 Task(
                     call_id=call.id,
@@ -100,7 +105,7 @@ def process_call(call_id: str) -> None:
                     source_quote=t.get("source_quote"),
                 )
             )
-        for e in analysis.get("calendar_events", []):
+        for e in calendar_events:
             db.add(
                 CalendarItem(
                     call_id=call.id,
@@ -112,13 +117,23 @@ def process_call(call_id: str) -> None:
                     requires_confirmation=e.get("requires_confirmation", True),
                 )
             )
-        for p in analysis.get("unclear_points", []):
+        for p in unclear_points:
             db.add(UnclearPoint(call_id=call.id, text=p))
 
         call.status = CallStatus.ready
         call.processed_at = datetime.now(UTC)
         call.error_message = None
         db.commit()
+        logger.info(
+            "AI analysis completed call_id=%s title=%s agreements=%s tasks=%s calendar_events=%s unclear_points=%s task_titles=%s",
+            call_id,
+            call.title,
+            len(agreements),
+            len(tasks),
+            len(calendar_events),
+            len(unclear_points),
+            [task.get("title") for task in tasks],
+        )
     except Exception as exc:
         logger.exception("process_call failed for call_id=%s\n%s", call_id, traceback.format_exc())
         db.rollback()

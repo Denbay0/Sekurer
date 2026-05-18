@@ -11,7 +11,8 @@ class AuthService:
         existing = db.scalar(select(User).where(User.email == email))
         if existing:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-        user = User(email=email, password_hash=get_password_hash(password), name=name)
+        display_name = name.strip() or email.split("@", 1)[0]
+        user = User(email=email, password_hash=get_password_hash(password), name=display_name)
         db.add(user)
         db.commit()
         db.refresh(user)
